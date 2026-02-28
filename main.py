@@ -1,15 +1,22 @@
-import tkinter as tk
+import customtkinter as ctk
 from tkinter import filedialog, messagebox
 from cryptography.fernet import Fernet
 import base64
 import hashlib
 import os
 
+ctk.set_appearance_mode("dark")
+ctk.set_default_color_theme("blue")
+
 selected_file = None
+
+
+# ================= ŞİFRELEME =================
 
 def generate_key(password):
     hash = hashlib.sha256(password.encode()).digest()
     return base64.urlsafe_b64encode(hash)
+
 
 def xor_encrypt_decrypt(data, password):
     key = password.encode()
@@ -20,14 +27,21 @@ def xor_encrypt_decrypt(data, password):
 
     return bytes(output)
 
+
+# ================= DOSYA SEÇ =================
+
 def select_file():
     global selected_file
     selected_file = filedialog.askopenfilename()
     if selected_file:
-        file_label.config(text=f"Seçildi: {os.path.basename(selected_file)}")
+        file_label.configure(text=f"Seçildi: {os.path.basename(selected_file)}")
+
+
+# ================= ŞİFRELE =================
 
 def encrypt_file():
     global selected_file
+
     if not selected_file:
         messagebox.showerror("Hata", "Önce bir dosya seçmelisiniz.")
         return
@@ -57,13 +71,17 @@ def encrypt_file():
             file.write(encrypted_data)
 
         messagebox.showinfo("Başarılı", "Dosya başarıyla şifrelendi!")
-        password_entry.delete(0, tk.END)
+        password_entry.delete(0, "end")
 
     except Exception as e:
-            messagebox.showerror("Hata", str(e))
+        messagebox.showerror("Hata", str(e))
+
+
+# ================= ÇÖZ =================
 
 def decrypt_file():
     global selected_file
+
     if not selected_file:
         messagebox.showerror("Hata", "Önce bir dosya seçmelisiniz.")
         return
@@ -96,41 +114,86 @@ def decrypt_file():
             file.write(decrypted_data)
 
         messagebox.showinfo("Başarılı", "Dosya başarıyla çözüldü!")
-        password_entry.delete(0, tk.END)
+        password_entry.delete(0, "end")
 
     except Exception:
         messagebox.showerror("Hata", "Yanlış şifre veya geçersiz dosya!")
 
-# GUI
-root = tk.Tk()  
+
+# ================= GUI =================
+
+root = ctk.CTk()
 root.title("Dosya Şifreleme Uygulaması")
-root.geometry("450x350")
+root.geometry("500x540")
 root.resizable(False, False)
-root.configure(bg="#2B2D42") 
 
-title = tk.Label(root, text="Dosya Şifreleme Uygulaması", font=("Arial", 18, "bold"), bg="#2B2D42", fg="#FF79C6")
-title.pack(pady=10)
+title = ctk.CTkLabel(
+    root,
+    text="Dosya Şifreleme Uygulaması",
+    font=ctk.CTkFont(size=22, weight="bold")
+)
+title.pack(pady=20)
 
-tk.Button(root, text="Dosya Seç", command=select_file, width=20, bg="#8D99AE", fg="black", activebackground="#8D99AE").pack(pady=5)
+select_button = ctk.CTkButton(
+    root,
+    text="Dosya Seç",
+    command=select_file,
+    width=200
+)
+select_button.pack(pady=10)
 
-file_label = tk.Label(root, text="Dosya seçilmedi", fg="white", bg="#2B2D42")
+file_label = ctk.CTkLabel(
+    root,
+    text="Dosya seçilmedi"
+)
 file_label.pack(pady=5)
 
-# Algoritma seçimi
-tk.Label(root, text="Algoritma Seç", bg="#2B2D42", fg="white").pack(pady=5)
+algorithm_label = ctk.CTkLabel(
+    root,
+    text="Algoritma Seç"
+)
+algorithm_label.pack(pady=10)
 
-algorithm_var = tk.StringVar(value="AES (Güçlü)")
+algorithm_var = ctk.StringVar(value="AES (Güçlü)")
 
-algorithm_menu = tk.OptionMenu(root, algorithm_var, "AES (Güçlü)", "XOR (Basit)")
-algorithm_menu.config(bg="#8D99AE", fg="black", width=15, relief="flat")
+algorithm_menu = ctk.CTkOptionMenu(
+    root,
+    values=["AES (Güçlü)", "XOR (Basit)"],
+    variable=algorithm_var,
+    width=200
+)
 algorithm_menu.pack(pady=5)
 
-tk.Label(root, text="Şifre Giriniz:", bg="#2B2D42", fg="white").pack(pady=5)
-password_entry = tk.Entry(root, show="*", width=30)
+password_label = ctk.CTkLabel(
+    root,
+    text="Şifre Giriniz:"
+)
+password_label.pack(pady=10)
+
+password_entry = ctk.CTkEntry(
+    root,
+    placeholder_text="Şifre",
+    show="*",
+    width=250
+)
 password_entry.pack(pady=5)
 
-tk.Button(root, text="Şifrele", command=encrypt_file, width=20, bg="#9B5DE5", fg="white", activebackground="#B48CD4").pack(pady=10)
-tk.Button(root, text="Çöz", command=decrypt_file, width=20,bg="#F15BB5", fg="white", activebackground="#E09BD3").pack(pady=5)
+encrypt_button = ctk.CTkButton(
+    root,
+    text="Şifrele",
+    command=encrypt_file,
+    width=200
+)
+encrypt_button.pack(pady=15)
+
+decrypt_button = ctk.CTkButton(
+    root,
+    text="Çöz",
+    command=decrypt_file,
+    width=200,
+    fg_color="#C850C0",
+    hover_color="#A832A8"
+)
+decrypt_button.pack(pady=5)
 
 root.mainloop()
-
